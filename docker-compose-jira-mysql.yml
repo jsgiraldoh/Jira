@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  jira:
+    depends_on:
+      - mysql
+    container_name: jira
+    restart: always
+    image: atlassian/jira-software
+    ports:
+      - '8080:8080'
+    volumes:
+      - $PWD/jira-data:/var/atlassian/jira
+    networks:
+      - jiranet
+
+  mysql:
+    container_name: mysql
+    restart: always
+    image: mysql:5.7
+    ports:
+      - '3306:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=toor
+      - MYSQL_DATABASE=jiradb
+      - MYSQL_USER=jira
+      - MYSQL_PASSWORD=jellyfish
+    volumes:
+      - $PWD/mysql-data:/var/lib/mysql
+    networks:
+      - jiranet
+
+networks:
+  jiranet:
+    driver: bridge

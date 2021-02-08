@@ -1,0 +1,61 @@
+version: '3'
+
+services:
+  jira:
+    depends_on:
+      - postgres-j
+    container_name: jira
+    restart: always
+    image: atlassian/jira-software
+    ports:
+      - '8080:8080'
+    environment: 
+      - TZ=America/Los_Angeles
+      - JVM_MINIMUM_MEMORY=4096m
+      - JVM_MAXIMUM_MEMORY=6144m
+      - JVM_RESERVED_CODE_CACHE_SIZE=512m
+      - ATL_JDBC_URL=jdbc:postgresql://postgres-j:5432/jiradb
+      - ATL_JDBC_USER=atlassian
+      - ATL_JDBC_PASSWORD=atlassian
+      - ATL_DB_DRIVER=org.postgresql.Driver
+      - ATL_DB_TYPE=postgres72
+      - ATL_TOMCAT_PORT=8080
+      - ATL_TOMCAT_CONTEXTPATH=/jira
+    volumes:
+      - $PWD/jira-data:/var/atlassian/application-data/jira
+    networks:
+      - jiranet
+
+  postgres-j:
+    container_name: postgresql-jira
+    restart: always
+    image: postgres:11
+    ports: 
+      - 5432:5432
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=atlassian
+      - POSTGRES_PASSWORD=atlassian
+      - POSTGRES_DB=jiradb
+      - POSTGRES_ENCODING=C.UTF-8
+      - POSTGRES_COLLATE=C
+      - POSTGRES_COLLATE_TYPE=C
+    volumes: 
+      - $PWD/pg_data:/var/lib/postgresql/data
+    networks:
+      - jiranet
+
+  adminer:
+    container_name: adminer
+    restart: always
+    image: adminer
+    ports:
+      - 9090:8080
+    networks:
+      - jiranet
+
+networks:
+  jiranet:
+    driver: bridge
+
